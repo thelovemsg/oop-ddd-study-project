@@ -45,7 +45,18 @@ public class Coupon {
                 .build();
     }
 
-    public Coupon update(CouponUpdate couponUpdate, TimeGenerator timeGenerator) {
+    public Coupon updateCouponInfo(CouponUpdate couponUpdate, TimeGenerator timeGenerator) {
+        return Coupon.builder()
+                .id(this.id)
+                .description(couponUpdate.getDescription())
+                .inventory(this.inventory)
+                .createdAt(this.createdAt)
+                .expireDate(couponUpdate.getExpireDate())
+                .modifiedAt(timeGenerator.millis())
+                .build();
+    }
+
+    public Coupon updateInventoryInfo(CouponUpdate couponUpdate, TimeGenerator timeGenerator) {
         isModifiable();
 
         Inventory inventory = Inventory.builder()
@@ -56,8 +67,9 @@ public class Coupon {
 
         return Coupon.builder()
                 .id(this.id)
-                .description(couponUpdate.getDescription())
+                .description(this.description)
                 .inventory(inventory)
+                .expireDate(this.expireDate)
                 .createdAt(this.createdAt)
                 .modifiedAt(timeGenerator.millis())
                 .build();
