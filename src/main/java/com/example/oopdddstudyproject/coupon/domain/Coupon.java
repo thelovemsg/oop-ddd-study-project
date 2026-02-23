@@ -46,6 +46,8 @@ public class Coupon {
     }
 
     public Coupon update(CouponUpdate couponUpdate, TimeGenerator timeGenerator) {
+        isModifiable();
+
         Inventory inventory = Inventory.builder()
                 .availableCount(couponUpdate.getAvailableCount())
                 .usedCount(couponUpdate.getUsedCount())
@@ -61,11 +63,10 @@ public class Coupon {
                 .build();
     }
 
-//    public IssuedCoupon issue(Long memberId) {
-//        // 1. 상태 검증 (만료 여부 등)
-////        verifyIssuable();
-//
-//        // 3. 성공 시에만 IssuedCoupon 애그리거트 생성 및 반환
-//        return new IssuedCoupon(this.id, memberId);
-//    }
+    private void isModifiable() {
+        if (this.inventory.getReservedCount() > 0 || this.inventory.getUsedCount() > 0) {
+            throw new IllegalStateException("이미 발급이 진행된 쿠폰은 수정할 수 없습니다.");
+        }
+    }
+
 }

@@ -13,12 +13,10 @@ public class Inventory {
 
     @Builder
     public Inventory(int availableCount, int usedCount, int reservedCount) {
-        // 1. 단일 속성 검증 (음수 불가)
         if (availableCount < 0 || usedCount < 0 || reservedCount < 0) {
             throw new IllegalArgumentException("수량은 0보다 작을 수 없습니다.");
         }
 
-        // 2. 전체 수량은 파라미터로 받지 않고 무조건 내부에서 도출 (정합성 100% 보장)
         this.totalCount = availableCount + usedCount + reservedCount;
         this.availableCount = availableCount;
         this.usedCount = usedCount;
@@ -45,4 +43,29 @@ public class Inventory {
                 .reservedCount(reservedCount)
                 .build();
     }
+
+    // 재고 추가 (총 발행량 증가)
+    public Inventory addQuantity(int addedCount) {
+        if (addedCount < 0) {
+            throw new IllegalArgumentException("추가 수량은 0보다 커야 합니다.");
+        }
+        return new Inventory(
+                this.availableCount + addedCount,
+                this.usedCount,
+                this.reservedCount // 기존 사용/예약 건수는 절대 건드리지 않음
+        );
+    }
+
+    // 쿠폰 발급 (가용 재고 감소, 예약 재고 증가)
+    public Inventory reserve() {
+        if (this.availableCount <= 0) {
+            throw new IllegalStateException("발급 가능한 쿠폰 재고가 부족합니다.");
+        }
+        return new Inventory(
+                this.availableCount - 1,
+                this.usedCount,
+                this.reservedCount + 1
+        );
+    }
+
 }
