@@ -10,17 +10,15 @@ public class CouponUpdate {
     private final Long id;
     private final String description;
     private final LocalDate expireDate;
-    private final int availableCount;
     private final int usedCount;
-    private final int reservedCount;
+    private final int totalCount;
 
     @Builder
-    public CouponUpdate(Long id, String description, LocalDate expireDate, int availableCount, int usedCount, int reservedCount) {
+    public CouponUpdate(Long id, String description, LocalDate expireDate, int usedCount, int totalCount) {
         this.id = id;
         this.description = description;
         this.expireDate = expireDate;
-        this.availableCount = availableCount;
         this.usedCount = usedCount;
-        this.reservedCount = reservedCount;
+        this.totalCount = totalCount;
     }
 }

@@ -28,11 +28,7 @@ public class Coupon {
     }
 
     public static Coupon from(CouponCreate couponCreate, TimeGenerator timeGenerator) {
-        Inventory inventory = Inventory.builder()
-                .availableCount(couponCreate.getAvailableCount())
-                .usedCount(couponCreate.getUsedCount())
-                .reservedCount(couponCreate.getReservedCount())
-                .build();
+        Inventory inventory = Inventory.createInitial(couponCreate.getTotalCount());
 
         long millis = timeGenerator.millis();
 
@@ -57,12 +53,10 @@ public class Coupon {
     }
 
     public Coupon updateInventoryInfo(CouponUpdate couponUpdate, TimeGenerator timeGenerator) {
-        isModifiable();
 
         Inventory inventory = Inventory.builder()
-                .availableCount(couponUpdate.getAvailableCount())
                 .usedCount(couponUpdate.getUsedCount())
-                .reservedCount(couponUpdate.getReservedCount())
+                .totalCount(couponUpdate.getTotalCount())
                 .build();
 
         return Coupon.builder()
@@ -75,10 +69,23 @@ public class Coupon {
                 .build();
     }
 
-    private void isModifiable() {
-        if (this.inventory.getReservedCount() > 0 || this.inventory.getUsedCount() > 0) {
-            throw new IllegalStateException("이미 발급이 진행된 쿠폰은 수정할 수 없습니다.");
-        }
+    public Coupon reserve() {
+        // TDA 위반! 객체간의 협업은 Tell! Don't Ask 를 지켜야 한다
+//        boolean hasAvailableStock = this.inventory.hasAvailableStock();
+//        if (!hasAvailableStock) {
+//            throw new IllegalStateException("잔여 수량이 없습니다.");
+//        }
+
+        Inventory usedInventory = this.inventory.use();
+
+        return Coupon.builder()
+                .id(this.id)
+                .description(this.description)
+                .inventory(usedInventory)
+                .expireDate(this.expireDate)
+                .createdAt(this.createdAt)
+                .modifiedAt(System.currentTimeMillis()) // 혹은 timeGenerator
+                .build();
     }
 
 }

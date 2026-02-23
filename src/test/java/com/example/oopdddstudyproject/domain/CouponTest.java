@@ -18,18 +18,12 @@ public class CouponTest {
     @Test
     @DisplayName("쿠폰 정보가 잘 생성이 잘 되는지 확인")
     public void 쿠폰_정보_생성_테스트() {
-        int reservedCount = 20;
-        int availableCount = 980;
-        int usedCount = 120;
-        int totalCount = reservedCount + availableCount + usedCount;
-
         //given
         LocalDate expireDate = LocalDate.of(2026, 2, 23);
 
         CouponCreate couponCreate = CouponCreate.builder()
-                .reservedCount(reservedCount)
-                .availableCount(availableCount)
-                .usedCount(usedCount)
+                .usedCount(0)
+                .totalCount(1000)
                 .description("테스트 생성입니다.")
                 .expireDate(expireDate)
                 .build();
@@ -42,20 +36,17 @@ public class CouponTest {
         assertThat(newCoupon.getDescription()).isEqualTo("테스트 생성입니다.");
         assertThat(newCoupon.getCreatedAt()).isEqualTo(timeGenerator.millis());
         assertThat(newCoupon.getModifiedAt()).isEqualTo(timeGenerator.millis());
-        assertThat(newCoupon.getInventory().getTotalCount()).isEqualTo(totalCount);
-        assertThat(newCoupon.getInventory().getReservedCount()).isEqualTo(reservedCount);
-        assertThat(newCoupon.getInventory().getAvailableCount()).isEqualTo(availableCount);
-        assertThat(newCoupon.getInventory().getUsedCount()).isEqualTo(usedCount);
+        assertThat(newCoupon.getInventory().getTotalCount()).isEqualTo(1000);
+        assertThat(newCoupon.getInventory().getUsedCount()).isEqualTo(0);
     }
 
     @Test
-    @DisplayName("이미 발급(예약/사용)된 쿠폰의 재고 정보를 수정하려 하면 에러가 발생한다")
-    public void 쿠폰_이미_판매되어_수정불가_에러() {
+    @DisplayName("예약 혹은 사용 정보가 없는 경우 쿠폰의 재고 정보가 올바르게 수정이 되는지")
+    public void 쿠폰_재고정보_수정() {
         //given
         Inventory inventory = Inventory.builder()
-                .reservedCount(1) // 예약 정보가 있음
-                .availableCount(99)
-                .usedCount(0)
+                .usedCount(0) // 사용 정보가 없음
+                .totalCount(1000)
                 .build();
 
         Coupon coupon = Coupon.builder()
@@ -67,16 +58,20 @@ public class CouponTest {
                 .build();
 
         CouponUpdate couponUpdate = CouponUpdate.builder()
-                .availableCount(500) // 수량 변경 시도
                 .description("수정 시도")
+                .totalCount(1500)
+                .usedCount(100)
                 .build();
 
         FakeTimeGenerator timeGenerator = new FakeTimeGenerator(2000L);
+        Coupon updatedCoupon = coupon.updateInventoryInfo(couponUpdate, timeGenerator);
 
         //when & then
-        assertThatThrownBy(() -> coupon.updateInventoryInfo(couponUpdate, timeGenerator))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("이미 발급이 진행된 쿠폰은 수정할 수 없습니다.");
+        assertThat(updatedCoupon.getDescription()).isEqualTo("발급 중인 쿠폰");
+        assertThat(updatedCoupon.getCreatedAt()).isEqualTo(1000L);
+        assertThat(updatedCoupon.getModifiedAt()).isEqualTo(timeGenerator.millis());
+        assertThat(updatedCoupon.getInventory().getTotalCount()).isEqualTo(1500);
+        assertThat(updatedCoupon.getInventory().getUsedCount()).isEqualTo(100);
     }
 
     @Test
@@ -84,8 +79,7 @@ public class CouponTest {
     public void 쿠폰_정보_수정_테스트() {
         //given
         Inventory inventory = Inventory.builder()
-                .reservedCount(10) // 이미 판매 중
-                .availableCount(90)
+                .totalCount(100)
                 .usedCount(5)
                 .build();
 
