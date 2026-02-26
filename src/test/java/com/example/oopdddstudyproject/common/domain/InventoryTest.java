@@ -1,5 +1,6 @@
 package com.example.oopdddstudyproject.common.domain;
 
+import com.example.oopdddstudyproject.common.vo.Inventory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

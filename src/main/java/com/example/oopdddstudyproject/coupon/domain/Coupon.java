@@ -1,7 +1,8 @@
 package com.example.oopdddstudyproject.coupon.domain;
 
 import com.example.oopdddstudyproject.common.service.TimeGenerator;
-import com.example.oopdddstudyproject.common.domain.Inventory;
+import com.example.oopdddstudyproject.common.vo.Inventory;
+import com.example.oopdddstudyproject.common.vo.Money;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,29 +13,31 @@ public class Coupon {
 
     private final Long id;
     private final String description;
-    private final Inventory inventory;
     private final LocalDate expireDate;
+    private final Inventory inventory;
+    private final Money originalPrice;
     private final Long createdAt;
     private final Long modifiedAt;
 
     @Builder
-    public Coupon(Long id, String description, Inventory inventory, LocalDate expireDate, Long createdAt, Long modifiedAt) {
+    public Coupon(Long id, String description, LocalDate expireDate, Inventory inventory, Money originalPrice, Long createdAt, Long modifiedAt) {
         this.id = id;
         this.description = description;
-        this.inventory = inventory;
         this.expireDate = expireDate;
+        this.inventory = inventory;
+        this.originalPrice = originalPrice;
         this.createdAt = createdAt;
         this.modifiedAt = modifiedAt;
     }
 
     public static Coupon from(CouponCreate couponCreate, TimeGenerator timeGenerator) {
         Inventory inventory = Inventory.createInitial(couponCreate.getTotalCount());
-
         long millis = timeGenerator.millis();
 
         return Coupon.builder()
                 .description(couponCreate.getDescription())
                 .inventory(inventory)
+                .originalPrice(couponCreate.getOriginalPrice())  // 추가
                 .expireDate(couponCreate.getExpireDate())
                 .createdAt(millis)
                 .modifiedAt(millis)
@@ -69,12 +72,10 @@ public class Coupon {
                 .build();
     }
 
-    public Coupon reserve() {
-        // TDA 위반! 객체간의 협업은 Tell! Don't Ask 를 지켜야 한다
-//        boolean hasAvailableStock = this.inventory.hasAvailableStock();
-//        if (!hasAvailableStock) {
-//            throw new IllegalStateException("잔여 수량이 없습니다.");
-//        }
+    public Coupon reserve(TimeGenerator timeGenerator) {
+        if (this.expireDate.isBefore(LocalDate.now())) {
+            throw new IllegalStateException("만료된 쿠폰입니다.");
+        }
 
         Inventory usedInventory = this.inventory.use();
 
@@ -83,8 +84,9 @@ public class Coupon {
                 .description(this.description)
                 .inventory(usedInventory)
                 .expireDate(this.expireDate)
+                .originalPrice(this.originalPrice)
                 .createdAt(this.createdAt)
-                .modifiedAt(System.currentTimeMillis()) // 혹은 timeGenerator
+                .modifiedAt(timeGenerator.millis())
                 .build();
     }
 

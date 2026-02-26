@@ -1,4 +1,4 @@
-package com.example.oopdddstudyproject;
+package com.example.oopdddstudyproject.fake;
 
 import com.example.oopdddstudyproject.common.service.TimeGenerator;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package com.example.oopdddstudyproject.common.domain;
+package com.example.oopdddstudyproject.common.vo;
 
 import lombok.Builder;
 import lombok.Getter;

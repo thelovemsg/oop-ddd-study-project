@@ -1,6 +1,6 @@
 package com.example.oopdddstudyproject.member.domain;
 
-import com.example.oopdddstudyproject.FakeTimeGenerator;
+import com.example.oopdddstudyproject.fake.FakeTimeGenerator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
