@@ -1,6 +1,6 @@
 package com.example.oopdddstudyproject.coupon.domain;
 
-import com.example.oopdddstudyproject.common.service.CouponNumberGenerator;
+import com.example.oopdddstudyproject.common.service.NumberGenerator;
 import com.example.oopdddstudyproject.common.service.TimeGenerator;
 import com.example.oopdddstudyproject.common.vo.Money;
 import com.example.oopdddstudyproject.coupon.domain.vo.IssuedCouponStatus;
@@ -33,25 +33,21 @@ public class IssuedCoupon {
         this.modifiedAt = modifiedAt;
     }
 
-    public static IssuedCoupon issue(Coupon coupon, Long memberId,
-                                     TimeGenerator timeGenerator,
-                                     CouponNumberGenerator couponNumberGenerator) {
+    public static IssuedCoupon issue(Coupon coupon, Long memberId, String couponNumber, Long issuedAt) {
         return IssuedCoupon.builder()
                 .couponId(coupon.getId())
                 .memberId(memberId)
-                .couponNumber(couponNumberGenerator.generate(coupon))
+                .couponNumber(couponNumber)
                 .appliedPrice(coupon.getOriginalPrice())  // 추가
                 .status(IssuedCouponStatus.UNUSED)
-                .issuedAt(timeGenerator.millis())
+                .issuedAt(issuedAt)
                 .build();
     }
 
-    public IssuedCoupon use(TimeGenerator timeGenerator) {
+    public IssuedCoupon use(long usingTime) {
         if (this.status != IssuedCouponStatus.UNUSED) {
             throw new IllegalStateException("사용 가능한 쿠폰이 아닙니다.");
         }
-
-        long millis = timeGenerator.millis();
 
         return IssuedCoupon.builder()
                 .id(this.id)
@@ -62,16 +58,14 @@ public class IssuedCoupon {
                 .status(IssuedCouponStatus.USED)
                 .issuedAt(this.issuedAt)
                 .createdAt(this.createdAt)
-                .modifiedAt(millis)
+                .modifiedAt(usingTime)
                 .build();
     }
 
-    public IssuedCoupon expire(TimeGenerator timeGenerator) {
+    public IssuedCoupon expire(long time) {
         if (this.status == IssuedCouponStatus.USED) {
             throw new IllegalStateException("이미 사용된 쿠폰은 만료할 수 없습니다.");
         }
-
-        long millis = timeGenerator.millis();
 
         return IssuedCoupon.builder()
                 .id(this.id)
@@ -82,7 +76,7 @@ public class IssuedCoupon {
                 .status(IssuedCouponStatus.EXPIRED)
                 .issuedAt(this.issuedAt)
                 .createdAt(this.createdAt)
-                .modifiedAt(millis)
+                .modifiedAt(time)
                 .build();
     }
 }

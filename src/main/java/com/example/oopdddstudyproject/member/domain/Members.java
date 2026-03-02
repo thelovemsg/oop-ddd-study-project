@@ -24,27 +24,25 @@ public class Members {
         this.modifiedAt = modifiedAt;
     }
 
-    public static Members from(MembersCreate membersCreate, TimeGenerator timeGenerator) {
-        long millis = timeGenerator.millis();
+    public static Members create(MembersCreate membersCreate, Long time) {
 
         return Members.builder()
                 .name(membersCreate.getName())
                 .address(membersCreate.getAddress())
                 .age(membersCreate.getAge())
-                .createdAt(millis)
-                .modifiedAt(millis)
+                .createdAt(time)
+                .modifiedAt(time)
                 .build();
     }
 
-    public Members updateMember(MembersUpdate membersUpdate, TimeGenerator timeGenerator) {
-        long millis = timeGenerator.millis();
+    public Members updateMember(MembersUpdate membersUpdate, Long time) {
 
         return Members.builder()
                 .id(this.id)
                 .name(membersUpdate.getName())
                 .address(membersUpdate.getAddress())
                 .createdAt(this.createdAt)
-                .modifiedAt(millis)
+                .modifiedAt(time)
                 .build();
     }
 

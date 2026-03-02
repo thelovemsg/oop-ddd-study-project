@@ -1,11 +1,11 @@
 package com.example.oopdddstudyproject.fake;
 
-import com.example.oopdddstudyproject.common.service.CouponNumberGenerator;
+import com.example.oopdddstudyproject.common.service.NumberGenerator;
 import com.example.oopdddstudyproject.coupon.domain.Coupon;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class FakeCouponNumberGenerator implements CouponNumberGenerator {
+public class FakeNumberGenerator implements NumberGenerator {
 
     private final String couponNumber;
 

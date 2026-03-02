@@ -30,32 +30,31 @@ public class Coupon {
         this.modifiedAt = modifiedAt;
     }
 
-    public static Coupon from(CouponCreate couponCreate, TimeGenerator timeGenerator) {
+    public static Coupon from(CouponCreate couponCreate, long currentTime) {
         Inventory inventory = Inventory.createInitial(couponCreate.getTotalCount());
-        long millis = timeGenerator.millis();
 
         return Coupon.builder()
                 .description(couponCreate.getDescription())
                 .inventory(inventory)
                 .originalPrice(couponCreate.getOriginalPrice())  // 추가
                 .expireDate(couponCreate.getExpireDate())
-                .createdAt(millis)
-                .modifiedAt(millis)
+                .createdAt(currentTime)
+                .modifiedAt(currentTime)
                 .build();
     }
 
-    public Coupon updateCouponInfo(CouponUpdate couponUpdate, TimeGenerator timeGenerator) {
+    public Coupon updateCouponInfo(CouponUpdate couponUpdate, long currentTime) {
         return Coupon.builder()
                 .id(this.id)
                 .description(couponUpdate.getDescription())
                 .inventory(this.inventory)
                 .createdAt(this.createdAt)
                 .expireDate(couponUpdate.getExpireDate())
-                .modifiedAt(timeGenerator.millis())
+                .modifiedAt(currentTime)
                 .build();
     }
 
-    public Coupon updateInventoryInfo(CouponUpdate couponUpdate, TimeGenerator timeGenerator) {
+    public Coupon updateInventoryInfo(CouponUpdate couponUpdate, long currentTime) {
 
         Inventory inventory = Inventory.builder()
                 .usedCount(couponUpdate.getUsedCount())
@@ -68,11 +67,11 @@ public class Coupon {
                 .inventory(inventory)
                 .expireDate(this.expireDate)
                 .createdAt(this.createdAt)
-                .modifiedAt(timeGenerator.millis())
+                .modifiedAt(currentTime)
                 .build();
     }
 
-    public Coupon reserve(TimeGenerator timeGenerator) {
+    public Coupon reserve(long currentTime) {
         if (this.expireDate.isBefore(LocalDate.now())) {
             throw new IllegalStateException("만료된 쿠폰입니다.");
         }
@@ -86,7 +85,7 @@ public class Coupon {
                 .expireDate(this.expireDate)
                 .originalPrice(this.originalPrice)
                 .createdAt(this.createdAt)
-                .modifiedAt(timeGenerator.millis())
+                .modifiedAt(currentTime)
                 .build();
     }
 

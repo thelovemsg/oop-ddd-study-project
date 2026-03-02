@@ -1,11 +1,15 @@
 package com.example.oopdddstudyproject.domain;
 
+import com.example.oopdddstudyproject.common.service.NumberGenerator;
+import com.example.oopdddstudyproject.common.service.TimeGenerator;
 import com.example.oopdddstudyproject.common.vo.Inventory;
 import com.example.oopdddstudyproject.common.vo.Money;
 import com.example.oopdddstudyproject.coupon.domain.Coupon;
 import com.example.oopdddstudyproject.coupon.domain.CouponCreate;
 import com.example.oopdddstudyproject.coupon.domain.CouponUpdate;
+import com.example.oopdddstudyproject.fake.FakeNumberGenerator;
 import com.example.oopdddstudyproject.fake.FakeTimeGenerator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,6 +19,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class CouponTest {
+
+    private TimeGenerator createTimeGenerator;
+    private TimeGenerator modifyTimeGenerator;
+
+    @BeforeEach
+    public void setup() {
+        createTimeGenerator = new FakeTimeGenerator(1000L);
+        modifyTimeGenerator = new FakeTimeGenerator(9999L);
+    }
 
     @Test
     @DisplayName("쿠폰 생성 시 정보가 올바르게 저장된다")
@@ -27,10 +40,9 @@ public class CouponTest {
                 .expireDate(LocalDate.of(2027, 12, 31))
                 .build();
 
-        FakeTimeGenerator timeGenerator = new FakeTimeGenerator(1000L);
 
         // when
-        Coupon coupon = Coupon.from(couponCreate, timeGenerator);
+        Coupon coupon = Coupon.from(couponCreate, createTimeGenerator.millis());
 
         // then
         assertThat(coupon.getDescription()).isEqualTo("테스트 생성입니다.");
@@ -62,7 +74,7 @@ public class CouponTest {
                 .build();
 
         // when
-        Coupon updatedCoupon = coupon.updateCouponInfo(couponUpdate, new FakeTimeGenerator(2000L));
+        Coupon updatedCoupon = coupon.updateCouponInfo(couponUpdate, modifyTimeGenerator.millis());
 
         // then
         assertThat(updatedCoupon.getDescription()).isEqualTo("변경된 설명");
@@ -70,7 +82,7 @@ public class CouponTest {
         assertThat(updatedCoupon.getInventory()).isEqualTo(coupon.getInventory());
         assertThat(updatedCoupon.getId()).isEqualTo(1L);
         assertThat(updatedCoupon.getCreatedAt()).isEqualTo(1000L);
-        assertThat(updatedCoupon.getModifiedAt()).isEqualTo(2000L);
+        assertThat(updatedCoupon.getModifiedAt()).isEqualTo(9999L);
     }
 
     @Test
@@ -93,14 +105,14 @@ public class CouponTest {
                 .build();
 
         // when
-        Coupon updatedCoupon = coupon.updateInventoryInfo(couponUpdate, new FakeTimeGenerator(2000L));
+        Coupon updatedCoupon = coupon.updateInventoryInfo(couponUpdate, modifyTimeGenerator.millis());
 
         // then
         assertThat(updatedCoupon.getInventory().getTotalCount()).isEqualTo(2000);
         assertThat(updatedCoupon.getInventory().getUsedCount()).isEqualTo(0);
         assertThat(updatedCoupon.getDescription()).isEqualTo("발급 전 쿠폰");
         assertThat(updatedCoupon.getCreatedAt()).isEqualTo(1000L);
-        assertThat(updatedCoupon.getModifiedAt()).isEqualTo(2000L);
+        assertThat(updatedCoupon.getModifiedAt()).isEqualTo(9999L);
     }
 
     @Test
@@ -118,7 +130,7 @@ public class CouponTest {
                 .build();
 
         // when
-        Coupon reservedCoupon = coupon.reserve(new FakeTimeGenerator(2000L));
+        Coupon reservedCoupon = coupon.reserve(modifyTimeGenerator.millis());
 
         // then
         assertThat(reservedCoupon.getInventory().getUsedCount()).isEqualTo(1);
@@ -127,7 +139,7 @@ public class CouponTest {
         assertThat(reservedCoupon.getInventory().getRemainCount()).isEqualTo(1000-1);
         assertThat(reservedCoupon.getOriginalPrice()).isEqualTo(Money.of(10000));
         assertThat(reservedCoupon.getCreatedAt()).isEqualTo(1000L);
-        assertThat(reservedCoupon.getModifiedAt()).isEqualTo(2000L);
+        assertThat(reservedCoupon.getModifiedAt()).isEqualTo(9999L);
     }
 
     @Test
@@ -145,7 +157,7 @@ public class CouponTest {
                 .build();
 
         // when & then
-        assertThatThrownBy(() -> coupon.reserve(new FakeTimeGenerator(2000L)))
+        assertThatThrownBy(() -> coupon.reserve(modifyTimeGenerator.millis()))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("만료된 쿠폰입니다.");
     }
@@ -165,7 +177,7 @@ public class CouponTest {
                 .build();
 
         // when
-        Coupon reservedCoupon = coupon.reserve(new FakeTimeGenerator(2000L));
+        Coupon reservedCoupon = coupon.reserve(modifyTimeGenerator.millis());
 
         // then
         assertThat(reservedCoupon).isNotSameAs(coupon);

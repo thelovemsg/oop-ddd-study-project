@@ -1,9 +1,12 @@
 package com.example.oopdddstudyproject.coupon.domain;
 
+import com.example.oopdddstudyproject.common.service.NumberGenerator;
+import com.example.oopdddstudyproject.common.service.TimeGenerator;
 import com.example.oopdddstudyproject.common.vo.Money;
 import com.example.oopdddstudyproject.coupon.domain.vo.IssuedCouponStatus;
-import com.example.oopdddstudyproject.fake.FakeCouponNumberGenerator;
+import com.example.oopdddstudyproject.fake.FakeNumberGenerator;
 import com.example.oopdddstudyproject.fake.FakeTimeGenerator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +14,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class IssuedCouponTest {
+
+    private TimeGenerator createTimeGenerator;
+    private TimeGenerator modifyTimeGenerator;
+    private NumberGenerator numberGenerator;
+
+    @BeforeEach
+    public void setup() {
+        createTimeGenerator = new FakeTimeGenerator(1000L);
+        modifyTimeGenerator = new FakeTimeGenerator(9999L);
+        numberGenerator = new FakeNumberGenerator("20250226-000001-ABC123");
+    }
 
     @Test
     @DisplayName("쿠폰 발급 시 UNUSED 상태로 생성되고 정가가 적용된다")
@@ -22,11 +36,12 @@ class IssuedCouponTest {
                 .originalPrice(Money.of(10000))
                 .build();
 
-        FakeTimeGenerator timeGenerator = new FakeTimeGenerator(1000L);
-        FakeCouponNumberGenerator couponNumberGenerator = new FakeCouponNumberGenerator("20250226-000001-ABC123");
 
         // when
-        IssuedCoupon issuedCoupon = IssuedCoupon.issue(coupon, 1L, timeGenerator, couponNumberGenerator);
+        long currentMillis = createTimeGenerator.millis();
+        String generatedNumber = numberGenerator.generate(coupon);
+
+        IssuedCoupon issuedCoupon = IssuedCoupon.issue(coupon, 1L, generatedNumber, currentMillis);
 
         // then
         assertThat(issuedCoupon.getCouponId()).isEqualTo(1L);
@@ -55,7 +70,8 @@ class IssuedCouponTest {
                 .build();
 
         // when
-        IssuedCoupon usedCoupon = issuedCoupon.use(new FakeTimeGenerator(9999L));
+        long usingTime = modifyTimeGenerator.millis();
+        IssuedCoupon usedCoupon = issuedCoupon.use(usingTime);
 
         // then
         assertThat(usedCoupon.getStatus()).isEqualTo(IssuedCouponStatus.USED);
@@ -82,7 +98,8 @@ class IssuedCouponTest {
                 .build();
 
         // when & then
-        assertThatThrownBy(() -> issuedCoupon.use(new FakeTimeGenerator(9999L)))
+        long usingTime = modifyTimeGenerator.millis();
+        assertThatThrownBy(() -> issuedCoupon.use(usingTime))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("사용 가능한 쿠폰이 아닙니다.");
     }
@@ -104,7 +121,8 @@ class IssuedCouponTest {
                 .build();
 
         // when & then
-        assertThatThrownBy(() -> issuedCoupon.use(new FakeTimeGenerator(9999L)))
+        long usingTime = modifyTimeGenerator.millis();
+        assertThatThrownBy(() -> issuedCoupon.use(usingTime))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("사용 가능한 쿠폰이 아닙니다.");
     }
@@ -126,7 +144,8 @@ class IssuedCouponTest {
                 .build();
 
         // when
-        IssuedCoupon expiredCoupon = issuedCoupon.expire(new FakeTimeGenerator(9999L));
+        long usingTime = modifyTimeGenerator.millis();
+        IssuedCoupon expiredCoupon = issuedCoupon.expire(usingTime);
 
         // then
         assertThat(expiredCoupon.getStatus()).isEqualTo(IssuedCouponStatus.EXPIRED);
@@ -153,7 +172,8 @@ class IssuedCouponTest {
                 .build();
 
         // when & then
-        assertThatThrownBy(() -> issuedCoupon.expire(new FakeTimeGenerator(9999L)))
+        long usingTime = modifyTimeGenerator.millis();
+        assertThatThrownBy(() -> issuedCoupon.expire(usingTime))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("이미 사용된 쿠폰은 만료할 수 없습니다.");
     }
@@ -175,7 +195,8 @@ class IssuedCouponTest {
                 .build();
 
         // when
-        IssuedCoupon usedCoupon = issuedCoupon.use(new FakeTimeGenerator(9999L));
+        long usingTime = modifyTimeGenerator.millis();
+        IssuedCoupon usedCoupon = issuedCoupon.use(usingTime);
 
         // then
         assertThat(usedCoupon).isNotSameAs(issuedCoupon);
