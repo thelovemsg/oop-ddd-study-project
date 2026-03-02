@@ -78,3 +78,19 @@
     * DB 락을 이용한 동시성 제어 및 JMeter 성능 측정.
 * **Phase 3: Redis 기반 분산 락 및 대기열 적용**
     * Redis 도입을 통한 DB 부하 분산 및 대용량 트래픽 최적화.
+ 
+## 7. 인프라 및 예외/장애 대응 설계 (Architecture & Resilience)
+
+### 7.1 비동기 이벤트 기반 아키텍처
+* **Decoupling:** RDBMS의 I/O 병목을 방지하기 위해 '재고 차감'과 '이력 저장'을 분리한다.
+* **흐름:** Redis를 통해 원자적으로 재고 차감 및 중복 발급 검증을 수행한 후, 성공한 요청에 한해 `CouponIssuedEvent`를 Message Queue(예: AWS SQS)로 발행하여 워커(Worker) 노드가 비동기로 RDB에 Insert 하도록 설계한다.
+
+### 7.2 어뷰징 방지 및 인프라 제어
+* **Rate Limiting:** 오픈 런 상황에서의 매크로 및 악의적 공격을 방어하기 위해 API Gateway 계층에서 초당 요청 수(Rate Limit)를 제어한다.
+
+### 7.3 정합성 보정 (Reconciliation)
+* **보상 트랜잭션:** Redis 재고는 차감되었으나 RDB 저장이 실패한(Event Lost) 경우를 대비하여, 실패한 메시지는 DLQ(Dead Letter Queue)로 전송하여 재처리 로직을 구성한다.
+* 주기적인 배치 워커를 통해 Redis의 발급 카운트와 RDB의 실제 `IssuedCoupon` 로우 수를 대조하여 정합성을 모니터링한다.
+
+### 7.4 관측 가능성 (Observability)
+* APM 및 모니터링 툴(CloudWatch, Grafana 등)을 연동하여 JMeter 부하 테스트 시 Active Thread, TPS, Latency, DB 커넥션 풀 상태를 시각화하고 병목 구간을 역추적한다.
