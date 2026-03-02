@@ -63,7 +63,7 @@ public class IssuedCoupon {
     }
 
     public IssuedCoupon expire(long time) {
-        if (this.status == IssuedCouponStatus.UNUSED) {
+        if (this.status != IssuedCouponStatus.UNUSED) {
             throw new IllegalStateException("이미 사용된 쿠폰은 만료할 수 없습니다.");
         }
 
