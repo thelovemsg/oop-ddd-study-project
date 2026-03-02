@@ -1,7 +1,5 @@
 package com.example.oopdddstudyproject.coupon.domain;
 
-import com.example.oopdddstudyproject.common.service.NumberGenerator;
-import com.example.oopdddstudyproject.common.service.TimeGenerator;
 import com.example.oopdddstudyproject.common.vo.Money;
 import com.example.oopdddstudyproject.coupon.domain.vo.IssuedCouponStatus;
 import lombok.Builder;
@@ -41,6 +39,8 @@ public class IssuedCoupon {
                 .appliedPrice(coupon.getOriginalPrice())  // 추가
                 .status(IssuedCouponStatus.UNUSED)
                 .issuedAt(issuedAt)
+                .createdAt(issuedAt)
+                .modifiedAt(issuedAt)
                 .build();
     }
 
@@ -63,7 +63,7 @@ public class IssuedCoupon {
     }
 
     public IssuedCoupon expire(long time) {
-        if (this.status == IssuedCouponStatus.USED) {
+        if (this.status == IssuedCouponStatus.UNUSED) {
             throw new IllegalStateException("이미 사용된 쿠폰은 만료할 수 없습니다.");
         }
 
