@@ -1,10 +1,15 @@
 package com.example.oopdddstudyproject.domain;
 
-import com.example.oopdddstudyproject.FakeTimeGenerator;
-import com.example.oopdddstudyproject.common.domain.Inventory;
+import com.example.oopdddstudyproject.common.service.NumberGenerator;
+import com.example.oopdddstudyproject.common.service.TimeGenerator;
+import com.example.oopdddstudyproject.common.vo.Inventory;
+import com.example.oopdddstudyproject.common.vo.Money;
 import com.example.oopdddstudyproject.coupon.domain.Coupon;
 import com.example.oopdddstudyproject.coupon.domain.CouponCreate;
 import com.example.oopdddstudyproject.coupon.domain.CouponUpdate;
+import com.example.oopdddstudyproject.fake.FakeNumberGenerator;
+import com.example.oopdddstudyproject.fake.FakeTimeGenerator;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -15,117 +20,167 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class CouponTest {
 
-    @Test
-    @DisplayName("쿠폰 정보가 잘 생성이 잘 되는지 확인")
-    public void 쿠폰_정보_생성_테스트() {
-        //given
-        LocalDate expireDate = LocalDate.of(2026, 2, 23);
+    private TimeGenerator createTimeGenerator;
+    private TimeGenerator modifyTimeGenerator;
 
+    @BeforeEach
+    public void setup() {
+        createTimeGenerator = new FakeTimeGenerator(1000L);
+        modifyTimeGenerator = new FakeTimeGenerator(9999L);
+    }
+
+    @Test
+    @DisplayName("쿠폰 생성 시 정보가 올바르게 저장된다")
+    void 쿠폰_생성() {
+        // given
         CouponCreate couponCreate = CouponCreate.builder()
-                .usedCount(0)
-                .totalCount(1000)
                 .description("테스트 생성입니다.")
-                .expireDate(expireDate)
-                .build();
-
-        //when
-        FakeTimeGenerator timeGenerator = new FakeTimeGenerator(10000);
-        Coupon newCoupon = Coupon.from(couponCreate, timeGenerator);
-
-        //then
-        assertThat(newCoupon.getDescription()).isEqualTo("테스트 생성입니다.");
-        assertThat(newCoupon.getCreatedAt()).isEqualTo(timeGenerator.millis());
-        assertThat(newCoupon.getModifiedAt()).isEqualTo(timeGenerator.millis());
-        assertThat(newCoupon.getInventory().getTotalCount()).isEqualTo(1000);
-        assertThat(newCoupon.getInventory().getUsedCount()).isEqualTo(0);
-    }
-
-    @Test
-    @DisplayName("예약 혹은 사용 정보가 없는 경우 쿠폰의 재고 정보가 올바르게 수정이 되는지")
-    public void 쿠폰_재고정보_수정() {
-        //given
-        Inventory inventory = Inventory.builder()
-                .usedCount(0) // 사용 정보가 없음
                 .totalCount(1000)
+                .originalPrice(Money.of(10000))
+                .expireDate(LocalDate.of(2027, 12, 31))
                 .build();
 
-        Coupon coupon = Coupon.builder()
-                .id(1L)
-                .description("발급 중인 쿠폰")
-                .inventory(inventory)
-                .createdAt(1000L)
-                .modifiedAt(1000L)
-                .build();
 
-        CouponUpdate couponUpdate = CouponUpdate.builder()
-                .description("수정 시도")
-                .totalCount(1500)
-                .usedCount(100)
-                .build();
+        // when
+        Coupon coupon = Coupon.from(couponCreate, createTimeGenerator.millis());
 
-        FakeTimeGenerator timeGenerator = new FakeTimeGenerator(2000L);
-        Coupon updatedCoupon = coupon.updateInventoryInfo(couponUpdate, timeGenerator);
-
-        //when & then
-        assertThat(updatedCoupon.getDescription()).isEqualTo("발급 중인 쿠폰");
-        assertThat(updatedCoupon.getCreatedAt()).isEqualTo(1000L);
-        assertThat(updatedCoupon.getModifiedAt()).isEqualTo(timeGenerator.millis());
-        assertThat(updatedCoupon.getInventory().getTotalCount()).isEqualTo(1500);
-        assertThat(updatedCoupon.getInventory().getUsedCount()).isEqualTo(100);
+        // then
+        assertThat(coupon.getDescription()).isEqualTo("테스트 생성입니다.");
+        assertThat(coupon.getOriginalPrice()).isEqualTo(Money.of(10000));
+        assertThat(coupon.getInventory().getTotalCount()).isEqualTo(1000);
+        assertThat(coupon.getInventory().getUsedCount()).isEqualTo(0);
+        assertThat(coupon.getCreatedAt()).isEqualTo(1000L);
+        assertThat(coupon.getModifiedAt()).isEqualTo(1000L);
+        assertThat(coupon.getId()).isNull();
     }
 
     @Test
-    @DisplayName("발급 내역이 있어도 설명이나 만료일 같은 일반 정보는 수정이 가능하다")
-    public void 쿠폰_정보_수정_테스트() {
-        //given
-        Inventory inventory = Inventory.builder()
-                .totalCount(100)
-                .usedCount(5)
-                .build();
-
+    @DisplayName("쿠폰 일반 정보 수정 시 설명과 만료일이 변경된다")
+    void 쿠폰_정보_수정() {
+        // given
         Coupon coupon = Coupon.builder()
                 .id(1L)
                 .description("기존 설명")
-                .inventory(inventory)
+                .inventory(Inventory.builder().totalCount(1000).usedCount(0).build())
+                .originalPrice(Money.of(10000))
                 .expireDate(LocalDate.of(2026, 12, 31))
                 .createdAt(1000L)
                 .modifiedAt(1000L)
                 .build();
 
-        LocalDate newExpireDate = LocalDate.of(2027, 1, 1);
         CouponUpdate couponUpdate = CouponUpdate.builder()
                 .description("변경된 설명")
-                .expireDate(newExpireDate)
+                .expireDate(LocalDate.of(2027, 12, 31))
                 .build();
 
-        FakeTimeGenerator timeGenerator = new FakeTimeGenerator(2000L);
+        // when
+        Coupon updatedCoupon = coupon.updateCouponInfo(couponUpdate, modifyTimeGenerator.millis());
 
-        //when
-        Coupon updatedCoupon = coupon.updateCouponInfo(couponUpdate, timeGenerator);
-
-        //then
+        // then
         assertThat(updatedCoupon.getDescription()).isEqualTo("변경된 설명");
-        assertThat(updatedCoupon.getExpireDate()).isEqualTo(newExpireDate);
-        assertThat(updatedCoupon.getInventory()).isEqualTo(inventory); // 재고 정보는 그대로 유지됨
-        assertThat(updatedCoupon.getModifiedAt()).isEqualTo(2000L);
+        assertThat(updatedCoupon.getExpireDate()).isEqualTo(LocalDate.of(2027, 12, 31));
+        assertThat(updatedCoupon.getInventory()).isEqualTo(coupon.getInventory());
+        assertThat(updatedCoupon.getId()).isEqualTo(1L);
+        assertThat(updatedCoupon.getCreatedAt()).isEqualTo(1000L);
+        assertThat(updatedCoupon.getModifiedAt()).isEqualTo(9999L);
     }
 
     @Test
-    @DisplayName("쿠폰 만료 기능 테스트 (비즈니스 로직 추가 시 활용)")
-    public void 쿠폰_만료_테스트() {
+    @DisplayName("발급 이력이 없으면 재고 정보를 수정할 수 있다")
+    void 쿠폰_재고_수정() {
         // given
         Coupon coupon = Coupon.builder()
-                .expireDate(LocalDate.of(2026, 12, 31))
+                .id(1L)
+                .description("발급 전 쿠폰")
+                .inventory(Inventory.builder().totalCount(1000).usedCount(0).build())
+                .originalPrice(Money.of(10000))
+                .expireDate(LocalDate.of(2027, 12, 31))
+                .createdAt(1000L)
+                .modifiedAt(1000L)
                 .build();
 
-        // when (가상의 시나리오: 만료일 변경)
-        CouponUpdate update = CouponUpdate.builder()
-                .expireDate(LocalDate.of(2026, 1, 1))
+        CouponUpdate couponUpdate = CouponUpdate.builder()
+                .totalCount(2000)
+                .usedCount(0)
                 .build();
 
-        Coupon expiredCoupon = coupon.updateCouponInfo(update, new FakeTimeGenerator(1000L));
+        // when
+        Coupon updatedCoupon = coupon.updateInventoryInfo(couponUpdate, modifyTimeGenerator.millis());
 
         // then
-        assertThat(expiredCoupon.getExpireDate()).isBefore(LocalDate.now());
+        assertThat(updatedCoupon.getInventory().getTotalCount()).isEqualTo(2000);
+        assertThat(updatedCoupon.getInventory().getUsedCount()).isEqualTo(0);
+        assertThat(updatedCoupon.getDescription()).isEqualTo("발급 전 쿠폰");
+        assertThat(updatedCoupon.getCreatedAt()).isEqualTo(1000L);
+        assertThat(updatedCoupon.getModifiedAt()).isEqualTo(9999L);
+    }
+
+    @Test
+    @DisplayName("예약 시 재고가 1 감소하고 modifiedAt이 갱신된다")
+    void 쿠폰_예약() {
+        // given
+        Coupon coupon = Coupon.builder()
+                .id(1L)
+                .description("예약 테스트")
+                .inventory(Inventory.builder().totalCount(1000).usedCount(0).build())
+                .originalPrice(Money.of(10000))
+                .expireDate(LocalDate.of(2027, 12, 31))
+                .createdAt(1000L)
+                .modifiedAt(1000L)
+                .build();
+
+        // when
+        Coupon reservedCoupon = coupon.reserve(modifyTimeGenerator.millis());
+
+        // then
+        assertThat(reservedCoupon.getInventory().getUsedCount()).isEqualTo(1);
+        assertThat(reservedCoupon.getInventory().getTotalCount()).isEqualTo(1000);
+        assertThat(reservedCoupon.getInventory().getUsedCount()).isEqualTo(1);
+        assertThat(reservedCoupon.getInventory().getRemainCount()).isEqualTo(1000-1);
+        assertThat(reservedCoupon.getOriginalPrice()).isEqualTo(Money.of(10000));
+        assertThat(reservedCoupon.getCreatedAt()).isEqualTo(1000L);
+        assertThat(reservedCoupon.getModifiedAt()).isEqualTo(9999L);
+    }
+
+    @Test
+    @DisplayName("만료된 쿠폰은 예약할 수 없다")
+    void 쿠폰_예약_만료_예외() {
+        // given
+        Coupon coupon = Coupon.builder()
+                .id(1L)
+                .description("만료 쿠폰")
+                .inventory(Inventory.builder().totalCount(1000).usedCount(0).build())
+                .originalPrice(Money.of(10000))
+                .expireDate(LocalDate.of(2020, 1, 1))  // 과거 날짜
+                .createdAt(1000L)
+                .modifiedAt(1000L)
+                .build();
+
+        // when & then
+        assertThatThrownBy(() -> coupon.reserve(modifyTimeGenerator.millis()))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("만료된 쿠폰입니다.");
+    }
+
+    @Test
+    @DisplayName("예약은 기존 객체를 변경하지 않고 새 객체를 반환한다")
+    void 쿠폰_예약_새객체_반환() {
+        // given
+        Coupon coupon = Coupon.builder()
+                .id(1L)
+                .description("예약 테스트")
+                .inventory(Inventory.builder().totalCount(1000).usedCount(0).build())
+                .originalPrice(Money.of(10000))
+                .expireDate(LocalDate.of(2027, 12, 31))
+                .createdAt(1000L)
+                .modifiedAt(1000L)
+                .build();
+
+        // when
+        Coupon reservedCoupon = coupon.reserve(modifyTimeGenerator.millis());
+
+        // then
+        assertThat(reservedCoupon).isNotSameAs(coupon);
+        assertThat(coupon.getInventory().getUsedCount()).isEqualTo(0);
     }
 }
