@@ -3,42 +3,60 @@ package com.example.oopdddstudyproject.common.vo;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Getter
 @EqualsAndHashCode
 public class Money {
 
-    private final int amount;
+    private static final int SCALE = 2;
+    private static final RoundingMode ROUNDING = RoundingMode.HALF_UP;
 
-    private Money(int amount) {
-        if (amount < 0) {
+    private final BigDecimal amount;
+
+    private Money(BigDecimal amount) {
+        if (amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("금액은 0원 이상이어야 합니다.");
         }
-        this.amount = amount;
+        this.amount = amount.setScale(SCALE, ROUNDING);
     }
 
     public static Money of(int amount) {
+        return new Money(BigDecimal.valueOf(amount));
+    }
+
+    public static Money of(BigDecimal amount) {
         return new Money(amount);
     }
 
     public static Money zero() {
-        return new Money(0);
+        return new Money(BigDecimal.ZERO);
     }
 
     public Money add(Money other) {
-        return new Money(this.amount + other.amount);
+        return new Money(this.amount.add(other.amount));
     }
 
     public Money subtract(Money other) {
-        if (this.amount < other.amount) {
+        BigDecimal result = this.amount.subtract(other.amount);
+        if (result.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("차감 후 금액은 0원 이상이어야 합니다.");
         }
-        return new Money(this.amount - other.amount);
+        return new Money(result);
     }
 
-    public Money discountByRate(double rate) {
-        if (rate < 0 || rate > 1) {
+    public Money discountByRate(BigDecimal rate) {
+        if (rate.compareTo(BigDecimal.ZERO) < 0 || rate.compareTo(BigDecimal.ONE) > 0) {
             throw new IllegalArgumentException("할인율은 0~1 사이여야 합니다.");
         }
-        return new Money((int) (this.amount * (1 - rate)));
+        return new Money(this.amount.multiply(BigDecimal.ONE.subtract(rate)));
+    }
+
+    public Money multiplyPercent(BigDecimal percent) {
+        BigDecimal result = this.amount
+                .multiply(percent)
+                .divide(BigDecimal.valueOf(100), SCALE, ROUNDING);
+        return new Money(result);
     }
 }
