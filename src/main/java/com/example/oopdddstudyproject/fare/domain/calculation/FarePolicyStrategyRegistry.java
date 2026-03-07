@@ -1,6 +1,6 @@
 package com.example.oopdddstudyproject.fare.domain.calculation;
 
-import com.example.oopdddstudyproject.fare.domain.policy.FarePolicyType;
+import com.example.oopdddstudyproject.fare.domain.policy.FarePolicyTypeEnum;
 
 import java.util.List;
 import java.util.Map;
@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 public class FarePolicyStrategyRegistry {
 
-    private final Map<FarePolicyType, FarePolicyStrategy> strategyMap;
+    private final Map<FarePolicyTypeEnum, FarePolicyStrategy> strategyMap;
 
     // 생성자에서 Strategy 리스트를 받아 Map으로 조립
     public FarePolicyStrategyRegistry(List<FarePolicyStrategy> strategies) {
@@ -19,7 +19,7 @@ public class FarePolicyStrategyRegistry {
                 ));
     }
 
-    public FarePolicyStrategy resolve(FarePolicyType type) {
+    public FarePolicyStrategy resolve(FarePolicyTypeEnum type) {
         FarePolicyStrategy strategy = strategyMap.get(type);
         if (strategy == null) {
             throw new IllegalArgumentException("지원하지 않는 정책 타입입니다: " + type);

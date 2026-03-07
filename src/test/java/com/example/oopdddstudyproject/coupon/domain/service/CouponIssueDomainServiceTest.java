@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Member;
 import java.time.LocalDate;
 
-
 class CouponIssueDomainServiceTest {
 
     private TimeGenerator timeGenerator;
