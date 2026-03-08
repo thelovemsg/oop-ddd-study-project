@@ -2,6 +2,7 @@ package com.example.oopdddstudyproject.coupon.domain.service;
 
 import com.example.oopdddstudyproject.common.service.NumberGenerator;
 import com.example.oopdddstudyproject.common.service.TimeGenerator;
+import com.example.oopdddstudyproject.common.vo.Money;
 import com.example.oopdddstudyproject.coupon.domain.Coupon;
 import com.example.oopdddstudyproject.coupon.domain.IssuedCoupon;
 
@@ -32,7 +33,7 @@ public class CouponIssueDomainService {
      * @param memberId 쿠폰을 발급받을 회원 ID
      * @return 조립이 완료된 IssuedCoupon 엔티티
      */
-    public IssuedCoupon issueToMember(Coupon coupon, Long memberId) {
+    public IssuedCoupon issueToMember(Coupon coupon, Long memberId, Money appliedPrice) {
         long currentTimeMillis = timeGenerator.millis();
 
         // 1. 쿠폰 수량 감소 로직 호출 (재고 소진 시 여기서 Exception 발생)
@@ -42,6 +43,6 @@ public class CouponIssueDomainService {
         String generatedNumber = numberGenerator.generate(coupon);
 
         // 3. 발급된 쿠폰 엔티티 생성
-        return IssuedCoupon.issue(coupon, memberId, generatedNumber, currentTimeMillis);
+        return IssuedCoupon.issue(coupon, memberId, generatedNumber, currentTimeMillis, appliedPrice);
     }
 }

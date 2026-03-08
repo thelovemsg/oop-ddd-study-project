@@ -1,6 +1,5 @@
 package com.example.oopdddstudyproject.coupon.domain;
 
-import com.example.oopdddstudyproject.common.service.TimeGenerator;
 import com.example.oopdddstudyproject.common.vo.Inventory;
 import com.example.oopdddstudyproject.common.vo.Money;
 import lombok.Builder;

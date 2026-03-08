@@ -1,7 +1,7 @@
 package com.example.oopdddstudyproject.fare.domain;
 
 import com.example.oopdddstudyproject.common.service.TimeGenerator;
-import com.example.oopdddstudyproject.fake.FakeTimeGenerator;
+import com.example.oopdddstudyproject.fake.generator.FakeTimeGenerator;
 import org.junit.jupiter.api.BeforeEach;
 
 class FareTest {

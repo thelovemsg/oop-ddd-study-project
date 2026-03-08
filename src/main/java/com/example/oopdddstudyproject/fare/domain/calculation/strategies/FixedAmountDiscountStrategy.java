@@ -7,6 +7,8 @@ import com.example.oopdddstudyproject.fare.domain.policy.CalculationBasisEnum;
 import com.example.oopdddstudyproject.fare.domain.policy.FarePolicy;
 import com.example.oopdddstudyproject.fare.domain.policy.FarePolicyTypeEnum;
 
+import java.math.BigDecimal;
+
 public class FixedAmountDiscountStrategy implements FarePolicyStrategy {
 
     @Override
@@ -17,10 +19,12 @@ public class FixedAmountDiscountStrategy implements FarePolicyStrategy {
     @Override
     public FareCalculationContext apply(FareCalculationContext context, FarePolicy policy) {
         // 단리/복리에 따라 기준 금액 결정
-        Money baseAmount = context.getOriginalPrice();
+        Money targetAmount = context.getCurrentPrice();
 
         // policy.getValue()가 20이면 20% 할증
-        Money newPrice = context.getCurrentPrice().subtract(baseAmount);
+        BigDecimal value = policy.getValue();
+        Money fixedAmount = Money.of(value);
+        Money newPrice = targetAmount.subtract(fixedAmount);
 
         return context.applyPolicy(newPrice,"고정 할인 : " + policy.getValue() + "할인!");
     }

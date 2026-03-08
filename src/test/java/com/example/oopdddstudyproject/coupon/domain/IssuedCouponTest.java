@@ -4,8 +4,8 @@ import com.example.oopdddstudyproject.common.service.NumberGenerator;
 import com.example.oopdddstudyproject.common.service.TimeGenerator;
 import com.example.oopdddstudyproject.common.vo.Money;
 import com.example.oopdddstudyproject.coupon.domain.vo.IssuedCouponStatus;
-import com.example.oopdddstudyproject.fake.FakeNumberGenerator;
-import com.example.oopdddstudyproject.fake.FakeTimeGenerator;
+import com.example.oopdddstudyproject.fake.generator.FakeNumberGenerator;
+import com.example.oopdddstudyproject.fake.generator.FakeTimeGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,7 +41,7 @@ class IssuedCouponTest {
         long currentMillis = createTimeGenerator.millis();
         String generatedNumber = numberGenerator.generate(coupon);
 
-        IssuedCoupon issuedCoupon = IssuedCoupon.issue(coupon, 1L, generatedNumber, currentMillis);
+        IssuedCoupon issuedCoupon = IssuedCoupon.issue(coupon, 1L, generatedNumber, currentMillis, Money.of(10000));
 
         // then
         assertThat(issuedCoupon.getCouponId()).isEqualTo(1L);

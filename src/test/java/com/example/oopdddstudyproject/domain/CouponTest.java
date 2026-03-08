@@ -1,14 +1,12 @@
 package com.example.oopdddstudyproject.domain;
 
-import com.example.oopdddstudyproject.common.service.NumberGenerator;
 import com.example.oopdddstudyproject.common.service.TimeGenerator;
 import com.example.oopdddstudyproject.common.vo.Inventory;
 import com.example.oopdddstudyproject.common.vo.Money;
 import com.example.oopdddstudyproject.coupon.domain.Coupon;
 import com.example.oopdddstudyproject.coupon.domain.CouponCreate;
 import com.example.oopdddstudyproject.coupon.domain.CouponUpdate;
-import com.example.oopdddstudyproject.fake.FakeNumberGenerator;
-import com.example.oopdddstudyproject.fake.FakeTimeGenerator;
+import com.example.oopdddstudyproject.fake.generator.FakeTimeGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

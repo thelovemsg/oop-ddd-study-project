@@ -7,8 +7,8 @@ import com.example.oopdddstudyproject.coupon.domain.Coupon;
 import com.example.oopdddstudyproject.coupon.domain.CouponCreate;
 import com.example.oopdddstudyproject.coupon.domain.IssuedCoupon;
 import com.example.oopdddstudyproject.coupon.domain.vo.IssuedCouponStatus;
-import com.example.oopdddstudyproject.fake.FakeNumberGenerator;
-import com.example.oopdddstudyproject.fake.FakeTimeGenerator;
+import com.example.oopdddstudyproject.fake.generator.FakeNumberGenerator;
+import com.example.oopdddstudyproject.fake.generator.FakeTimeGenerator;
 import com.example.oopdddstudyproject.member.domain.Members;
 import com.example.oopdddstudyproject.member.domain.MembersCreate;
 import org.junit.jupiter.api.Assertions;
@@ -16,7 +16,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Member;
 import java.time.LocalDate;
 
 class CouponIssueDomainServiceTest {
@@ -57,7 +56,7 @@ class CouponIssueDomainServiceTest {
         Members members = Members.create(membersCreate, timeGenerator.millis());
 
         // When (쿠폰 발급 도메인 서비스 실행)
-        IssuedCoupon issuedCoupon = couponIssueDomainService.issueToMember(coupon, members.getId());
+        IssuedCoupon issuedCoupon = couponIssueDomainService.issueToMember(coupon, members.getId(), Money.of(10000));
 
         // Then (조립된 도메인 객체의 상태 및 정책 검증)
         Assertions.assertAll("IssuedCoupon 조립 검증",
