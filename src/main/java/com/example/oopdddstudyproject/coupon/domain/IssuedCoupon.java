@@ -31,12 +31,12 @@ public class IssuedCoupon {
         this.modifiedAt = modifiedAt;
     }
 
-    public static IssuedCoupon issue(Coupon coupon, Long memberId, String couponNumber, Long issuedAt) {
+    public static IssuedCoupon issue(Coupon coupon, Long memberId, String couponNumber, Long issuedAt, Money appliedPrice) {
         return IssuedCoupon.builder()
                 .couponId(coupon.getId())
                 .memberId(memberId)
                 .couponNumber(couponNumber)
-                .appliedPrice(coupon.getOriginalPrice())  // 추가
+                .appliedPrice(appliedPrice)  // 추가
                 .status(IssuedCouponStatus.UNUSED)
                 .issuedAt(issuedAt)
                 .createdAt(issuedAt)
